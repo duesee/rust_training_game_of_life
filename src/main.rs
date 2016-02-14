@@ -5,8 +5,6 @@ use std::fmt;
 use std::thread::sleep;
 use std::time::Duration;
 
-enum BufferLocation { Foreground, Background }
-
 struct Board {
     rows:     usize,
     cols:     usize,
@@ -21,79 +19,59 @@ struct Board {
 
 impl Board {
     fn new(rows: usize, cols: usize) -> Board {
-        // Allocate two more rows and cols to construct an always dead
-        // phantom border. This simplifies the next-gen algorithm.
-        let buffer_a = vec![vec![false; cols + 2]; rows + 2];
-        let buffer_b = vec![vec![false; cols + 2]; rows + 2];
-
         Board {
             rows:     rows,
             cols:     cols,
             switch:   true,
-            buffer_a: buffer_a,
-            buffer_b: buffer_b,
+            // Allocate two more rows and columns to construct an always
+            // dead phantom border. This simplifies the algorithm.
+            buffer_a: vec![vec![false; cols + 2]; rows + 2],
+            buffer_b: vec![vec![false; cols + 2]; rows + 2],
         }
     }
 
     fn populate(&mut self) {
-        let (rows, cols) = (self.rows, self.cols);
-        let mut buffer   = self.get_buffer(BufferLocation::Foreground);
-        let mut rng      = rand::thread_rng();
-        let between      = rand::distributions::Range::new(0, 100);
+        let &mut Board { rows, cols, ref mut buffer_a, .. } = self;
+        
+        let mut rng = rand::thread_rng();
+        let between = rand::distributions::Range::new(0, 100);
 
         for row in 1..rows + 1 {
             for col in 1..cols + 1 {
-                buffer[row][col] = between.ind_sample(&mut rng) < 7;
+                // 7 out of 100 cells should be alive.
+                buffer_a[row][col] = between.ind_sample(&mut rng) < 7;
             }
         }
     }
 
     fn next(&mut self) {
-        {
-            let (rows, cols)  = (self.rows, self.cols);
-            // TODO: Maybe use a RefCell?
-            let     buffer_fg = self.get_buffer(BufferLocation::Foreground).clone();
-            let mut buffer_bg = self.get_buffer(BufferLocation::Background);
+        let &mut Board { rows, cols, switch, ref mut buffer_a, ref mut buffer_b } = self;
 
-            for row in 1..rows + 1 {
-                for col in 1..cols + 1 {
-                    // Here is another small simplification of the algorithm:
-                    // Instead of starting the counter with zero, start with
-                    // minus 1 ...
-                    let mut counter = -1;
-                    for row_d in 0..3 {
-                        for col_d in 0..3 {
-                            if buffer_fg[row + row_d - 1]
-                                        [col + col_d - 1] {
-                                counter += 1;
-                            }
+        let (buffer_fg, buffer_bg) = match switch {
+            true  => (buffer_a, buffer_b),
+            false => (buffer_b, buffer_a),
+        };
+
+        for row in 1..rows + 1 {
+            for col in 1..cols + 1 {
+                // Another small simplification: Instead of starting
+                // the counter with zero, start with minus 1 ...
+                let mut counter = -1;
+                for row_d in 0..3 {
+                    for col_d in 0..3 {
+                        if buffer_fg[row + row_d - 1]
+                                    [col + col_d - 1] {
+                            counter += 1;
                         }
                     }
-                    // ... and adapt the rules accordingly. 
-                    buffer_bg[row][col] = counter == 2 || counter == 3;
                 }
+                // ... and adapt the rules accordingly. 
+                buffer_bg[row][col] = counter == 2 || counter == 3;
             }
         }
         
         // Don't forget to swap the buffers.
         self.switch = !self.switch;
-    }
-
-    fn get_buffer(&mut self, loc: BufferLocation) -> &mut Vec<Vec<bool>> {
-        match loc {
-            BufferLocation::Foreground => {
-                match self.switch {
-                    true  => &mut self.buffer_a,
-                    false => &mut self.buffer_b,
-                }
-            },
-            BufferLocation::Background => {
-                match self.switch {
-                    true  => &mut self.buffer_b,
-                    false => &mut self.buffer_a,
-                }
-            }
-        }
     }
 }
 
@@ -127,7 +105,8 @@ fn main() {
 
     for cnt in 1.. {
         board.next();
-        println!("{}\n{:^60}", board, format!("<<< Generation: {:>6} >>>", cnt));
+        println!("{}", board);
+        println!("{:^60}", format!("<<< Generation: {:>6} >>>", cnt));
         sleep(Duration::from_millis(100));
     }
 }
