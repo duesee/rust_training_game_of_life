@@ -39,7 +39,7 @@ impl Board {
         for row in 1..rows + 1 {
             for col in 1..cols + 1 {
                 // 7 out of 100 cells should be alive.
-                buffer_a[row][col] = between.ind_sample(&mut rng) < 7;
+                buffer_a[row][col] = between.ind_sample(&mut rng) < 15;
             }
         }
     }
@@ -54,9 +54,11 @@ impl Board {
 
         for row in 1..rows + 1 {
             for col in 1..cols + 1 {
-                // Another small simplification: Instead of starting
-                // the counter with zero, start with minus 1 ...
-                let mut counter = -1;
+                let mut counter = 0;
+                // Start with minus 1 if the cell is alive to eliminate handling a
+                // special case, i.e. the middle cell, when counting the neighbors.
+                let alive = buffer_fg[row][col];
+                if  alive { counter = -1 }
                 for row_d in 0..3 {
                     for col_d in 0..3 {
                         if buffer_fg[row + row_d - 1]
@@ -65,8 +67,11 @@ impl Board {
                         }
                     }
                 }
-                // ... and adapt the rules accordingly. 
-                buffer_bg[row][col] = counter == 2 || counter == 3;
+                if alive {
+                    buffer_bg[row][col] = counter == 2 || counter == 3;
+                } else {
+                    buffer_bg[row][col] = counter == 3;
+                }
             }
         }
         
@@ -77,14 +82,13 @@ impl Board {
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let (rows, cols) = (self.rows, self.cols);
-        let buffer_fg    = match self.switch {
+        let buffer_fg = match self.switch {
             true  => &self.buffer_a,
             false => &self.buffer_b
         };
 
-        for row in 1..rows + 1 {
-            for col in 1..cols + 1 {
+        for row in 1..self.rows + 1 {
+            for col in 1..self.cols + 1 {
                 if buffer_fg[row][col] {
                     try!(write!(f, "•"))
                 } else {
