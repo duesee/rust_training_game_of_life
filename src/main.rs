@@ -104,9 +104,9 @@ fn main() {
     board.populate();
 
     for cnt in 1.. {
-        board.next();
         println!("{}", board);
         println!("{:^60}", format!("<<< Generation: {:>6} >>>", cnt));
+        board.next();
         sleep(Duration::from_millis(100));
     }
 }
