@@ -1,7 +1,7 @@
 extern crate rand;
 
-use rand::distributions::{IndependentSample, Range};
-use std::fmt::{self, Display, Formatter};
+use rand::distributions::IndependentSample;
+use std::fmt;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -51,6 +51,7 @@ impl Board {
     fn next(&mut self) {
         {
             let (rows, cols)  = (self.rows, self.cols);
+            // TODO: Maybe use a RefCell?
             let     buffer_fg = self.get_buffer(BufferLocation::Foreground).clone();
             let mut buffer_bg = self.get_buffer(BufferLocation::Background);
 
@@ -96,7 +97,7 @@ impl Board {
     }
 }
 
-impl Display for Board {
+impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let (rows, cols) = (self.rows, self.cols);
         let buffer_fg    = match self.switch {
@@ -127,6 +128,6 @@ fn main() {
     for cnt in 1.. {
         board.next();
         println!("{}\n{:^60}", board, format!("<<< Generation: {:>6} >>>", cnt));
-        sleep(Duration::from_millis(150));
+        sleep(Duration::from_millis(100));
     }
 }
