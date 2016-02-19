@@ -70,11 +70,8 @@ fn main() {
     examples[selection](&mut board);
 
     for cnt in 1.. {
-        // Formatting strings are explained here:
-        // https://doc.rust-lang.org/std/fmt/
-        println!("{1}\n{2:^0$}", cols,
-                                 board,
-                                 format!("<<< Generation: {:>6} >>>", cnt));
+        // Formatting strings are explained here: https://doc.rust-lang.org/std/fmt/
+        println!("{1}\n{2:^0$}", cols, board, format!("<<< Generation: {:>6} >>>", cnt));
         board.next();
         sleep(Duration::from_millis(100));
     }
