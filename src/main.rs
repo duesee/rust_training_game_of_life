@@ -47,17 +47,17 @@ fn example3(board: &mut Board) {
 fn main() {
     let rows = match read_usize(String::from("How many rows (1...100): ")) {
         x @ 1...100 => x,
-        _           => panic!("Wrong row count...")
+        _           => panic!("Please choose a row count between 1 and 100.")
     };
 
     let cols = match read_usize(String::from("How many cols (1...100): ")) {
         x @ 1...100 => x,
-        _           => panic!("Wrong col count")
+        _           => panic!("Please choose a col count between 1 and 100.")
     };
     
     let selection = match read_usize(String::from("Choose a population\n\t0) Random\n\t1) Glider\n\t2) Gosper Glider Gun\n--> ")) {
         x @ 0...2 => x,
-        _         => panic!("Wrong selection...")
+        _         => panic!("Please choose an existing population.")
     };
 
     let mut board = Board::new(rows, cols);
