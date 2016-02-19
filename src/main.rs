@@ -8,7 +8,7 @@ use std::time::Duration;
 
 fn read_usize(msg: String) -> usize {
     print!("{}", msg);
-    stdout().flush().ok().expect("Could not flush stdout.");
+    stdout().flush().ok().expect("Couldn't flush stdout.");
     
     let mut input = String::new();
     io::stdin().read_line(&mut input).ok().expect("Failed to read line...");
@@ -16,7 +16,7 @@ fn read_usize(msg: String) -> usize {
     // parse::<usize> will be inferred from the context.
     match input.trim().parse() {
         Ok(num) => num,
-        Err(_)  => panic!("Couldn't parse input to u64..."),
+        Err(_)  => panic!("Couldn't parse input to usize..."),
     }
 }
 
