@@ -1,23 +1,21 @@
 extern crate rust_training_game_of_life;
 
 use rust_training_game_of_life::Board;
+use std::error::Error;
 use std::io::{self, stdout};
 use std::io::prelude::*;
 use std::thread::sleep;
 use std::time::Duration;
 
-fn read_usize(msg: String) -> usize {
+fn read_usize(msg: &str) -> Result<usize, Box<Error>> {
     print!("{}", msg);
-    stdout().flush().ok().expect("Couldn't flush stdout.");
+    try!(stdout().flush());
     
     let mut input = String::new();
-    io::stdin().read_line(&mut input).ok().expect("Failed to read line...");
+    try!(io::stdin().read_line(&mut input));
 
     // parse::<usize> will be inferred from the context.
-    match input.trim().parse() {
-        Ok(num) => num,
-        Err(_)  => panic!("Couldn't parse input to usize..."),
-    }
+    Ok(try!(input.trim().parse()))
 }
 
 /// Populate randomly.
@@ -44,18 +42,28 @@ fn example3(board: &mut Board) {
     ]);
 }
 
+fn goodbye(err: Box<Error>) -> usize {
+    println!("************************************************************");
+    println!("Oh no: {}", err.description());
+    println!("************************************************************");
+    std::process::exit(-1);
+}
+
 fn main() {
-    let rows = match read_usize(String::from("How many rows (1...100): ")) {
-        x @ 1...100 => x,
-        _           => panic!("Please choose a row count between 1 and 100.")
+    let rows = read_usize("How many rows (20...100): ").unwrap_or_else(&goodbye);
+    match rows {
+        x @ 20...100 => x,
+        _            => panic!("Please choose a row count between 20 and 100.")
     };
 
-    let cols = match read_usize(String::from("How many cols (1...100): ")) {
-        x @ 1...100 => x,
-        _           => panic!("Please choose a col count between 1 and 100.")
+    let cols = read_usize("How many columns (40...100): ").unwrap_or_else(&goodbye);
+    match cols {
+        x @ 40...100 => x,
+        _            => panic!("Please choose a column count between 40 and 100.")
     };
     
-    let selection = match read_usize(String::from("Choose a population\n\t0) Random\n\t1) Glider\n\t2) Gosper Glider Gun\n--> ")) {
+    let fig = read_usize("Choose \n\t0) Random\n\t1) Glider\n\t2) Gosper Glider Gun\nas figure: ").unwrap_or_else(&goodbye);
+    match fig {
         x @ 0...2 => x,
         _         => panic!("Please choose an existing population.")
     };
@@ -67,7 +75,7 @@ fn main() {
                                              example2,
                                              example3];
     
-    examples[selection](&mut board);
+    examples[fig](&mut board);
 
     for cnt in 1.. {
         // Formatting strings are explained here: https://doc.rust-lang.org/std/fmt/
