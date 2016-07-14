@@ -8,27 +8,28 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
-const USAGE: &'static str = " 
+const USAGE: &'static str = "
 Game of Life.
 
 Usage:
-  gol random <rows> <columns>
-  gol glider <rows> <columns>
-  gol gosper <rows> <columns>
+  gol random <rows> <columns> [--fadeout]
+  gol glider <rows> <columns> [--fadeout]
+  gol gosper <rows> <columns> [--fadeout]
   gol (-h | --help)
 
 Options:
   -h --help     Show this screen.
-  
+  --fadeout     Enable fadeout effect.
 ";
 
 #[derive(RustcDecodable)]
 struct Args {
-    arg_rows:     usize,
-    arg_columns:  usize,
-    cmd_random:   bool,
-    cmd_glider:   bool,
-    cmd_gosper:   bool,
+    arg_rows: usize,
+    arg_columns: usize,
+    cmd_random: bool,
+    cmd_glider: bool,
+    cmd_gosper: bool,
+    flag_fadeout: bool,
 }
 
 type CliResult = Result<(), Box<Error>>;
@@ -40,9 +41,7 @@ fn example1(board: &mut Board) -> CliResult {
 
 /// Populate with a glider.
 fn example2(board: &mut Board) -> CliResult {
-    Ok(try!(board.population_from_vec(vec![
-        (10, 10), (11, 11), (12,  9), (12, 10), (12, 11)
-    ])))
+    Ok(try!(board.population_from_vec(vec![(10, 10), (11, 11), (12, 9), (12, 10), (12, 11)])))
 }
 
 /// Populate with a gosper glider gun.
@@ -57,8 +56,8 @@ fn example3(board: &mut Board) -> CliResult {
     ])))
 }
 
-fn run(args: &Args) -> CliResult {                           
-    let mut board = Board::new(args.arg_rows, args.arg_columns);
+fn run(args: &Args) -> CliResult {
+    let mut board = Board::new(args.arg_rows, args.arg_columns, args.flag_fadeout);
 
     if args.cmd_random {
         try!(example1(&mut board))
@@ -69,14 +68,17 @@ fn run(args: &Args) -> CliResult {
     } else {
         unreachable!()
     }
-    
+
     for cnt in 1.. {
         // Formatting strings are explained here: https://doc.rust-lang.org/std/fmt/
-        println!("{1}\n{2:^0$}", args.arg_columns, board, format!("<<< Generation: {:>6} >>>", cnt));
+        println!("{1}\n{2:^0$}",
+                 args.arg_columns,
+                 board,
+                 format!("<<< Generation: {:>6} >>>", cnt));
         board.next();
         sleep(Duration::from_millis(100));
     }
-    
+
     Ok(())
 }
 
@@ -86,7 +88,10 @@ fn main() {
         .unwrap_or_else(|e| e.exit());
 
     match run(&args) {
-        Ok(_)    => (),
-        Err(err) => { println!("Something went wrong: {}", err.description()); return }
+        Ok(_) => (),
+        Err(err) => {
+            println!("Something went wrong: {}", err.description());
+            return;
+        }
     }
 }
