@@ -4,4 +4,6 @@ version = "0.1.0"
 authors = ["Damian Poddebniak <damian.poddebniak@fh-muenster.de>"]
 
 [dependencies]
-rand = "*"
+docopt          = "*"
+rand            = "*"
+rustc-serialize = "*"

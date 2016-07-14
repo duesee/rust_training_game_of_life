@@ -47,14 +47,16 @@ impl Board {
         }
     }
 
-    pub fn population_from_vec(&mut self, data: Vec<(usize, usize)>) {
+    pub fn population_from_vec(&mut self, data: Vec<(usize, usize)>) -> Result<(), &str> {
         for (row, col) in data {
             if row < self.rows && col < self.cols {
                 self.buffer_a[row + 1][col + 1] = 255;
             } else {
-                panic!("cell not in field");
+                return Err("Figure does not fit in field.")
             }
         }
+
+        Ok(())
     }
 
     pub fn next(&mut self) {
