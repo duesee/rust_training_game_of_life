@@ -87,11 +87,5 @@ fn main() {
         .and_then(|d| d.decode())
         .unwrap_or_else(|e| e.exit());
 
-    match run(&args) {
-        Ok(_) => (),
-        Err(err) => {
-            println!("Something went wrong: {}", err.description());
-            return;
-        }
-    }
+    run(&args).unwrap_or_else(|e| println!("Something went wrong: {}", e));
 }
