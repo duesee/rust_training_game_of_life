@@ -11,9 +11,9 @@ pub struct Board {
     // buffer. When a calculation has finished, the buffers are swapped,
     // so that the fg-buffer becomes the bg-buffer and vice versa.
     switch: bool,
-    // Instead of using a boolean variable, we encode the cells with an
+    // Instead of using a boolean variable, we encode the cells with a
     // non negative integer. The cell is alive iff the int is equal to
-    // 255. This will be used to implement a "fade-out effect".
+    // 255. The value will be used to implement a "fade-out effect".
     buffer_a: Vec<Vec<u8>>,
     buffer_b: Vec<Vec<u8>>,
     fadeout: bool,
@@ -93,7 +93,7 @@ impl Board {
                         buffer_bg[row][col] = 255;
                     } else if *cell_fg >= 1 {
                         // Instead of setting to false, decrement by one.
-                        // This allows a cool fade-out effect.
+                        // This is done for the fade-out effect.
                         buffer_bg[row][col] = *cell_fg - 1;
                     }
                 } else {
@@ -101,7 +101,7 @@ impl Board {
                         buffer_bg[row][col] = 255;
                     } else if *cell_fg >= 1 {
                         // Instead of setting to false, decrement by one.
-                        // This allows a cool fade-out effect.
+                        // This is done for the fade-out effect.
                         buffer_bg[row][col] = *cell_fg - 1;
                     }
                 }
